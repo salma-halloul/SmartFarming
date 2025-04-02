@@ -166,117 +166,115 @@ export default function IrrigationScreen() {
 
 
                 {/* Zones d'irrigation */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Zones d'Irrigation</Text>
-        <TouchableOpacity onPress={() => {
-          setEditingZone(null);
-          setShowAddZone(!showAddZone);
-        }}>
-          <Ionicons name={showAddZone ? "close" : "add"} size={24} color="#2e8b57" />
-        </TouchableOpacity>
-      </View>
+                <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>Zones d'Irrigation</Text>
+                    <TouchableOpacity onPress={() => {
+                        setEditingZone(null);
+                        setShowAddZone(!showAddZone);
+                    }}>
+                        <Ionicons name={showAddZone ? "close" : "add"} size={24} color="#2e8b57" />
+                    </TouchableOpacity>
+                </View>
 
-      {(showAddZone || editingZone) && (
-        <View style={styles.addZoneContainer}>
-          <TextInput
-            style={styles.zoneInput}
-            placeholder="Nom Zone"
-            placeholderTextColor="#999"
-            value={editingZone ? editingZone.name : newZoneName}
-            onChangeText={(text) => 
-                editingZone 
-                  ? setEditingZone({...editingZone, name: text}) 
-                  : setNewZoneName(text)
-              }
-       />
-          <TextInput
-            style={styles.zoneInput}
-            placeholder="Humidité (%)"
-            placeholderTextColor="#999"
-            value={
-                editingZone 
-                  ? editingZone.moisture.toString() 
-                  : newZoneMoisture
-              }
-              onChangeText={(text) => 
-                editingZone
-                  ? setEditingZone({...editingZone, moisture: parseInt(text) || 0})
-                  : setNewZoneMoisture(text)
-              }
-              keyboardType="numeric"
-            />
+                {(showAddZone || editingZone) && (
+                    <View style={styles.addZoneContainer}>
+                        <TextInput
+                            style={styles.zoneInput}
+                            placeholder="Nom Zone"
+                            placeholderTextColor="#999"
+                            value={editingZone ? editingZone.name : newZoneName}
+                            onChangeText={(text) =>
+                                editingZone
+                                    ? setEditingZone({ ...editingZone, name: text })
+                                    : setNewZoneName(text)
+                            }
+                        />
+                        <TextInput
+                            style={styles.zoneInput}
+                            placeholder="Humidité (%)"
+                            placeholderTextColor="#999"
+                            value={
+                                editingZone
+                                    ? editingZone.moisture.toString()
+                                    : newZoneMoisture
+                            }
+                            onChangeText={(text) =>
+                                editingZone
+                                    ? setEditingZone({ ...editingZone, moisture: parseInt(text) || 0 })
+                                    : setNewZoneMoisture(text)
+                            }
+                            keyboardType="numeric"
+                        />
 
-<View style={styles.formButtonsContainer}>
-            {editingZone && (
-              <TouchableOpacity 
-                style={[styles.formButton, styles.cancelButton]}
-                onPress={() => setEditingZone(null)}
-              >
-                <Text style={styles.formButtonText}>Annuler</Text>
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity 
-              style={[
-                styles.formButton, 
-                styles.confirmButton,
-                ((editingZone 
-                  ? editingZone.name.trim() === "" || isNaN(editingZone.moisture)
-                  : newZoneName.trim() === "" || newZoneMoisture.trim() === "")
-                ) && styles.disabledButton
-              ]} 
-              onPress={editingZone ? updateZone : addNewZone}
-              disabled={
-                editingZone
-                  ? editingZone.name.trim() === "" || isNaN(editingZone.moisture)
-                  : newZoneName.trim() === "" || newZoneMoisture.trim() === ""
-              }
-            >
-              <Text style={styles.formButtonText}>
-                {editingZone ? "Modifier" : "Ajouter"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
+                        <View style={styles.formButtonsContainer}>
+                            {editingZone && (
+                                <TouchableOpacity
+                                    style={[styles.formButton, styles.cancelButton]}
+                                    onPress={() => setEditingZone(null)}
+                                >
+                                    <Text style={styles.formButtonText}>Annuler</Text>
+                                </TouchableOpacity>
+                            )}
+                            <TouchableOpacity
+                                style={[
+                                    styles.formButton,
+                                    styles.confirmButton,
+                                    ((editingZone
+                                        ? editingZone.name.trim() === "" || isNaN(editingZone.moisture)
+                                        : newZoneName.trim() === "" || newZoneMoisture.trim() === "")
+                                    ) && styles.disabledButton
+                                ]}
+                                onPress={editingZone ? updateZone : addNewZone}
+                                disabled={
+                                    editingZone
+                                        ? editingZone.name.trim() === "" || isNaN(editingZone.moisture)
+                                        : newZoneName.trim() === "" || newZoneMoisture.trim() === ""
+                                }
+                            >
+                                <Text style={styles.formButtonText}>
+                                    {editingZone ? "Modifier" : "Ajouter"}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
 
-      {zones.map(zone => (
-        <TouchableOpacity
-          key={zone.id}
-          style={styles.zoneCard}
-          onPress={() => {
-            setEditingZone(zone);
-            setShowAddZone(true);
-          }}
-        >
-          <View style={styles.zoneInfo}>
-            <Text style={styles.zoneName}>{zone.name}</Text>
-            <View style={styles.moistureContainer}>
-              <Ionicons name="water-outline" size={16} color="#4682b4" />
-              <Text style={styles.moistureText}>{zone.moisture}%</Text>
-            </View>
-          </View>
-          <View style={styles.zoneActions}>
-              <TouchableOpacity 
-                onPress={() => {
-                  setEditingZone(zone);
-                  setShowAddZone(true);
-                }}
-              >
-                <Ionicons name="create-outline" size={20} color="#2e8b57" />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                onPress={() => deleteZone(zone.id)}
-                style={styles.deleteButton}
-              >
-                <Ionicons name="trash-outline" size={20} color="#ff4444" />
-              </TouchableOpacity>
-            </View>
-        </TouchableOpacity>
-      ))}
+                {zones.map(zone => (
+                    <TouchableOpacity
+                        key={zone.id}
+                        style={styles.zoneCard}
+                        onPress={() => {
+                            setEditingZone(zone);
+                            setShowAddZone(true);
+                        }}
+                    >
+                        <View style={styles.zoneInfo}>
+                            <Text style={styles.zoneName}>{zone.name}</Text>
+                            <View style={styles.moistureContainer}>
+                                <Ionicons name="water-outline" size={16} color="#4682b4" />
+                                <Text style={styles.moistureText}>{zone.moisture}%</Text>
+                            </View>
+                        </View>
+                        <View style={styles.zoneActions}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setEditingZone(zone);
+                                    setShowAddZone(true);
+                                }}
+                            >
+                                <Ionicons name="create-outline" size={20} color="#2e8b57" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => deleteZone(zone.id)}
+                                style={styles.deleteButton}
+                            >
+                                <Ionicons name="trash-outline" size={20} color="#ff4444" />
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableOpacity>
+                ))}
 
-               
 
-                
                 {/* Programmes */}
                 <Text style={styles.sectionTitle}>Programmes</Text>
                 {programmes.length > 0 ? (
@@ -527,43 +525,43 @@ const styles = StyleSheet.create({
         borderColor: '#ddd',
         borderRadius: 8,
         overflow: 'hidden',
-      },
-      tableHeader: {
+    },
+    tableHeader: {
         flexDirection: 'row',
         backgroundColor: '#2e8b57',
         paddingVertical: 10,
         paddingHorizontal: 5,
-      },
-      headerText: {
+    },
+    headerText: {
         flex: 1,
         color: 'white',
         fontWeight: 'bold',
         textAlign: 'center',
-      },
-      tableRow: {
+    },
+    tableRow: {
         flexDirection: 'row',
         paddingVertical: 12,
         paddingHorizontal: 5,
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
-      },
-      cellText: {
+    },
+    cellText: {
         flex: 1,
         textAlign: 'center',
         color: '#333',
-      },
-      sectionHeader: {
+    },
+    sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 15,
-      },
-      addZoneContainer: {
+    },
+    addZoneContainer: {
         flexDirection: 'row',
         marginBottom: 15,
         alignItems: 'center',
-      },
-      zoneInput: {
+    },
+    zoneInput: {
         flex: 1,
         borderWidth: 1,
         borderColor: '#ddd',
@@ -572,61 +570,61 @@ const styles = StyleSheet.create({
         marginRight: 10,
         color: '#000',
         backgroundColor: '#fff',
-      },
-      addZoneButton: {
+    },
+    addZoneButton: {
         backgroundColor: '#2e8b57',
         paddingVertical: 12,
         paddingHorizontal: 20,
         borderRadius: 8,
         opacity: 1,
-      },
-      addZoneButtonDisabled: {
+    },
+    addZoneButtonDisabled: {
         opacity: 0.5,
-      },
-      addZoneButtonText: {
+    },
+    addZoneButtonText: {
         color: '#fff',
         fontWeight: 'bold',
-      },
+    },
 
-      disabledButton: {
+    disabledButton: {
         opacity: 0.5,
-      },
+    },
 
-      zoneFormContainer: {
+    zoneFormContainer: {
         marginBottom: 15,
-      },
-      formButtonsContainer: {
+    },
+    formButtonsContainer: {
         flexDirection: 'row',
         justifyContent: 'flex-end',
         gap: 10,
-      },
-      formButton: {
+    },
+    formButton: {
         paddingVertical: 10,
         paddingHorizontal: 20,
         borderRadius: 8,
         alignItems: 'center',
-      },
-      confirmButton: {
+    },
+    confirmButton: {
         backgroundColor: '#2e8b57',
-      },
-      cancelButton: {
+    },
+    cancelButton: {
         backgroundColor: '#6c757d',
-      },
-      formButtonText: {
+    },
+    formButtonText: {
         color: '#fff',
         fontWeight: 'bold',
-      },
-      zoneCardContainer: {
+    },
+    zoneCardContainer: {
         marginBottom: 10,
-      },
+    },
 
-      zoneActions: {
+    zoneActions: {
         flexDirection: 'row',
         gap: 15,
-      },
-      deleteButton: {
+    },
+    deleteButton: {
         marginLeft: 10,
-      },
+    },
 });
 
 
