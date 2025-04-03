@@ -1,9 +1,48 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
+import { Animal } from '@/types/animal';
+import { collection, getDocs, limit, query } from 'firebase/firestore';
+import { db } from '@/firebaseConfig';
 
 export default function Dashboard() {
   const router = useRouter();
+  const [livestockData, setLivestockData] = useState<Animal[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Récupérer 2 animaux depuis Firestore
+  useEffect(() => {
+    const fetchLivestock = async () => {
+      try {
+        const q = query(collection(db, 'livestock'), limit(2));
+        const querySnapshot = await getDocs(q);
+        
+        const animals: Animal[] = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          animals.push({
+            id: doc.id,
+            name: data.name,
+            type: data.type,
+            age: data.age,
+            health: data.health || 'healthy',
+            photoBase64: data.photoBase64,
+            lastCheck: ''
+          });
+        });
+
+        setLivestockData(animals);
+      } catch (error) {
+        console.error("Erreur de récupération:", error);
+        Alert.alert("Erreur", "Impossible de charger les données du bétail");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLivestock();
+  }, []);
 
   // Données simulées (remplacez par vos données réelles plus tard)
   const weatherData = {
@@ -18,10 +57,13 @@ export default function Dashboard() {
     ph: '6.2',
   };
 
-  const livestockData = [
-    { id: 1, name: 'Vache #101', status: '✅ En bonne santé' },
-    { id: 2, name: 'Vache #102', status: '⚠️ À surveiller' },
-  ];
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2e8b57" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -87,26 +129,53 @@ export default function Dashboard() {
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Ionicons name="paw-outline" size={24} color="#2e8b57" />
-          <Text style={styles.cardTitle}>Bétail</Text>
+          <Text style={styles.cardTitle}>Bétail récent</Text>
         </View>
-        {livestockData.map((animal) => (
-          <View key={animal.id} style={styles.livestockItem}>
-            <Text style={styles.livestockName}>{animal.name}</Text>
-            <Text style={[
-              styles.livestockStatus,
-              animal.status.includes('⚠️') ? styles.warning : styles.success
-            ]}>
-              {animal.status}
-            </Text>
-          </View>
-        ))}
+        
+        {livestockData.length > 0 ? (
+          livestockData.map((animal) => (
+            <View key={animal.id} style={styles.livestockItem}>
+              {animal.photoBase64 ? (
+                <Image 
+                  source={{ uri: animal.photoBase64 }} 
+                  style={styles.animalThumbnail} 
+                />
+              ) : (
+                <View style={styles.animalThumbnailPlaceholder}>
+                  <Ionicons name="paw" size={20} color="#6c757d" />
+                </View>
+              )}
+              
+              <View style={styles.livestockInfo}>
+                <Text style={styles.livestockName}>{animal.name}</Text>
+                <Text style={styles.livestockType}>{animal.type} • {animal.age}</Text>
+              </View>
+              
+              <View style={[
+                styles.healthBadge,
+                animal.health === 'healthy' ? styles.healthyBadge :
+                animal.health === 'warning' ? styles.warningBadge :
+                styles.criticalBadge
+              ]}>
+                <Text style={styles.healthBadgeText}>
+                  {animal.health === 'healthy' ? '✅ Bonne santé' :
+                   animal.health === 'warning' ? '⚠️ À surveiller' : '❌ Critique'}
+                </Text>
+              </View>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.noDataText}>Aucun animal enregistré</Text>
+        )}
+
         <TouchableOpacity 
           style={styles.addButton}
-          onPress={() => router.push('/')}
+          onPress={() => router.push('/livestock')}
         >
-          <Text style={styles.addButtonText}>+ Ajouter un animal</Text>
+          <Text style={styles.addButtonText}>Voir tout le bétail</Text>
         </TouchableOpacity>
       </View>
+
 
       {/* Actions rapides */}
       <Text style={styles.sectionTitle}>Actions rapides</Text>
@@ -209,17 +278,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#2e8b57',
   },
-  livestockItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  livestockName: {
-    fontSize: 16,
-  },
   livestockStatus: {
     fontSize: 14,
   },
@@ -265,5 +323,65 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 14,
     color: '#555',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  livestockItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  animalThumbnail: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  animalThumbnailPlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#e9ecef',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  livestockInfo: {
+    flex: 1,
+  },
+  livestockName: {
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  livestockType: {
+    color: '#6c757d',
+    fontSize: 14,
+  },
+  healthBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  healthyBadge: {
+    backgroundColor: '#d4edda',
+  },
+  warningBadge: {
+    backgroundColor: '#fff3cd',
+  },
+  criticalBadge: {
+    backgroundColor: '#f8d7da',
+  },
+  healthBadgeText: {
+    fontSize: 12,
+  },
+  noDataText: {
+    textAlign: 'center',
+    padding: 16,
+    color: '#6c757d',
   },
 });

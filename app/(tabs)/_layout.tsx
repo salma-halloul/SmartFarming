@@ -13,8 +13,24 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen name="soil" options={{ title: 'Sol' }} />
-      <Tabs.Screen name="weather" options={{ title: 'Méteo' }} />
+      <Tabs.Screen
+        name="weather"
+        options={{
+          title: 'Météo',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="partly-sunny" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="soil"
+        options={{
+          title: 'Sol',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="leaf" size={24} color={color} />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="irrigation"
         options={{
@@ -24,6 +40,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen 
+  name="livestock" 
+  options={{
+    title: 'Bétail',
+    tabBarIcon: ({ color }) => (
+      <Ionicons name="paw" size={24} color={color} />
+    ),
+  }} 
+/>
 
     </Tabs>
   );

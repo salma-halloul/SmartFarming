@@ -5,11 +5,15 @@ import { useEffect, useState } from 'react';
 import * as FileSystem from 'expo-file-system';
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
 import { db } from '@/firebaseConfig';
+import ProgramModal from '../components/ProgramModal';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 export default function IrrigationScreen() {
   const router = useRouter();
   const [programmes, setProgrammes] = useState<Program[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [isAutoMode, setIsAutoMode] = useState(true);
   const [nextProgram, setNextProgram] = useState<Program | null>(null);
   const [newZoneName, setNewZoneName] = useState("");
   const [newZoneMoisture, setNewZoneMoisture] = useState("");
@@ -149,6 +153,24 @@ export default function IrrigationScreen() {
                 </TouchableOpacity>
             </View>
 
+            <LinearGradient
+                colors={['#f8f9fa', '#e9ecef']}
+                style={styles.modeCard}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+            >
+                <View style={styles.modeTextContainer}>
+                    <Ionicons name="hardware-chip" size={20} color="#2e8b57" />
+                    <Text style={styles.modeText}>Mode Automatique</Text>
+                </View>
+                <Switch
+                    value={isAutoMode}
+                    onValueChange={setIsAutoMode}
+                    thumbColor="#fff"
+                    trackColor={{ false: '#767577', true: '#2e8b57' }}
+                />
+            </LinearGradient>
+
             <View>
                 {/* Statistiques principales */}
                 <View style={styles.statsContainer}>
@@ -239,7 +261,8 @@ export default function IrrigationScreen() {
                     </View>
                 )}
 
-                {zones.map(zone => (
+<View style={styles.zoneContainer}>
+{zones.map(zone => (
                     <TouchableOpacity
                         key={zone.id}
                         style={styles.zoneCard}
@@ -273,6 +296,7 @@ export default function IrrigationScreen() {
                         </View>
                     </TouchableOpacity>
                 ))}
+                </View>
 
 
                 {/* Programmes */}
@@ -318,12 +342,20 @@ export default function IrrigationScreen() {
 
 
             <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => router.push('/quick-start')}
-                >
-                    <Text style={styles.actionButtonText}>Programmer l'irrigation</Text>
-                </TouchableOpacity>
+                <View style={{ flex: 1 }}>
+                    <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={() => setModalVisible(true)}
+                    >
+                        <Text style={styles.actionButtonText}>Programmer l'irrigation</Text>
+                    </TouchableOpacity>
+
+                    <ProgramModal
+                        visible={modalVisible}
+                        onClose={() => setModalVisible(false)}
+                        onProgramAdded={loadPrograms}
+                    />
+                </View>
             </View>
         </ScrollView>
     );
@@ -526,6 +558,9 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         overflow: 'hidden',
     },
+    zoneContainer: {
+        marginBottom: 20,
+    },
     tableHeader: {
         flexDirection: 'row',
         backgroundColor: '#2e8b57',
@@ -554,7 +589,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 15,
     },
     addZoneContainer: {
         flexDirection: 'row',
