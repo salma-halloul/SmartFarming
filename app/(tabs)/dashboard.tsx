@@ -70,7 +70,7 @@ export default function Dashboard() {
       {/* En-tête */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Tableau de bord</Text>
-        <TouchableOpacity onPress={() => router.push('/')}>
+        <TouchableOpacity onPress={() => router.push('/profile')}>
           <Ionicons name="settings-outline" size={24} color="#2e8b57" />
         </TouchableOpacity>
       </View>

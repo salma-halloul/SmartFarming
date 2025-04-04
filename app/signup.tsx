@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { View, Image, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/firebaseConfig';
 
-export default function LoginScreen() {
+export default function SignUpScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async () => {
+  const handleSignUp = async () => {
     if (!email || !password) {
       Alert.alert('Erreur', 'Veuillez remplir tous les champs');
       return;
@@ -18,23 +18,21 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await createUserWithEmailAndPassword(auth, email, password);
+      Alert.alert('Succès', 'Compte créé avec succès');
       router.replace('/dashboard');
     } catch (error: any) {
-      let errorMessage = "Échec de la connexion";
+      let errorMessage = "Échec de l'inscription";
       
       switch (error.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = "Email déjà utilisé";
+          break;
         case 'auth/invalid-email':
           errorMessage = "Email invalide";
           break;
-        case 'auth/user-not-found':
-          errorMessage = "Utilisateur non trouvé";
-          break;
-        case 'auth/wrong-password':
-          errorMessage = "Mot de passe incorrect";
-          break;
-        case 'auth/too-many-requests':
-          errorMessage = "Trop de tentatives. Réessayez plus tard";
+        case 'auth/weak-password':
+          errorMessage = "Mot de passe trop faible (min 6 caractères)";
           break;
       }
 
@@ -46,12 +44,12 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Image
-        source={require('../assets/images/image.png')}
-        style={styles.image}
-      />
+                  <Image 
+              source={require('../assets/images/image.png')}
+              style={styles.image}
+            />
       <Text style={styles.title}>Smart Farming</Text>
-      <Text style={styles.subtitle}>Connectez-vous</Text>
+      <Text style={styles.subtitle}>Créez votre compte</Text>
 
       <TextInput
         style={styles.input}
@@ -65,7 +63,7 @@ export default function LoginScreen() {
 
       <TextInput
         style={styles.input}
-        placeholder="Mot de passe"
+        placeholder="Mot de passe (min 6 caractères)"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -75,12 +73,12 @@ export default function LoginScreen() {
         <ActivityIndicator size="large" color="#2e8b57" />
       ) : (
         <>
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Se connecter</Text>
+          <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+            <Text style={styles.buttonText}>S'inscrire</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => router.push('/signup')}>
-            <Text style={styles.link}>Pas de compte ? S'inscrire</Text>
+          <TouchableOpacity onPress={() => router.push('/')}>
+            <Text style={styles.link}>Déjà un compte ? Se connecter</Text>
           </TouchableOpacity>
         </>
       )}
@@ -91,6 +89,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   image: { width: '100%', height: '30%', marginBottom:30 }, 
 
+
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -98,6 +97,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginTop: 50,
   },
+
   title: {
     fontSize: 24,
     fontWeight: 'bold',
